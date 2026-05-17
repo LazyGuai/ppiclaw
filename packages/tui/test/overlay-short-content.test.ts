@@ -18,6 +18,12 @@ class SimpleOverlay implements Component {
 	invalidate() {}
 }
 
+async function flushAfterRenderCycle(terminal: VirtualTerminal): Promise<void> {
+	// TUI rendering is throttled to ~16ms; wait one cycle before flushing output.
+	await new Promise((resolve) => setTimeout(resolve, 20));
+	await terminal.flush();
+}
+
 describe("TUI overlay with short content", () => {
 	it("should render overlay when content is shorter than terminal height", async () => {
 		// Terminal has 24 rows, but content only has 3 lines
@@ -33,8 +39,7 @@ describe("TUI overlay with short content", () => {
 
 		// Trigger render
 		tui.start();
-		await new Promise((r) => process.nextTick(r));
-		await terminal.flush();
+		await flushAfterRenderCycle(terminal);
 
 		const viewport = terminal.getViewport();
 		const hasOverlay = viewport.some((line) => line.includes("OVERLAY"));

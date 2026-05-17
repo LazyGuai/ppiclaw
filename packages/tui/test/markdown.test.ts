@@ -10,6 +10,12 @@ import { VirtualTerminal } from "./virtual-terminal.js";
 // Force full color in CI so ANSI assertions are deterministic
 const chalk = new Chalk({ level: 3 });
 
+async function flushAfterRenderCycle(terminal: VirtualTerminal): Promise<void> {
+	// TUI rendering is throttled to ~16ms; wait one cycle before flushing output.
+	await new Promise((resolve) => setTimeout(resolve, 20));
+	await terminal.flush();
+}
+
 function getCellItalic(terminal: VirtualTerminal, row: number, col: number): number {
 	const xterm = (terminal as unknown as { xterm: XtermTerminalType }).xterm;
 	const buffer = xterm.buffer.active;
@@ -592,7 +598,7 @@ describe("Markdown component", () => {
 			const component = new MarkdownWithInput(markdown);
 			tui.addChild(component);
 			tui.start();
-			await terminal.flush();
+			await flushAfterRenderCycle(terminal);
 
 			assert.ok(component.markdownLineCount > 0);
 			const inputRow = component.markdownLineCount;
@@ -1032,7 +1038,7 @@ bar`,
 			const tui = new TUI(terminal);
 			tui.addChild(markdown);
 			tui.start();
-			await terminal.flush();
+			await flushAfterRenderCycle(terminal);
 
 			const renderedLine = markdown.render(80)[0];
 			assert.ok(renderedLine, "Should render heading line");
