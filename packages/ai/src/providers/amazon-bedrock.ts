@@ -263,8 +263,8 @@ export const streamSimpleBedrock: StreamFunction<"bedrock-converse-stream", Simp
 		return streamBedrock(model, context, { ...base, reasoning: undefined } satisfies BedrockOptions);
 	}
 
-	if (model.id.includes("anthropic.claude") || model.id.includes("anthropic/claude")) {
-		if (supportsAdaptiveThinking(model.id)) {
+	if (isAnthropicClaudeModel(model)) {
+		if (supportsAdaptiveThinking(model.id, model.name)) {
 			return streamBedrock(model, context, {
 				...base,
 				reasoning: options.reasoning,
@@ -420,21 +420,60 @@ function handleContentBlockStop(
 }
 
 /**
- * Check if the model supports adaptive thinking (Opus 4.6 and Sonnet 4.6).
+ * Build normalized candidate strings used for model capability matching.
+ * This handles raw IDs, provider-prefixed IDs, and display names.
  */
-function supportsAdaptiveThinking(modelId: string): boolean {
-	return (
-		modelId.includes("opus-4-6") ||
-		modelId.includes("opus-4.6") ||
-		modelId.includes("sonnet-4-6") ||
-		modelId.includes("sonnet-4.6")
+function getModelMatchCandidates(modelId: string, modelName?: string): string[] {
+	const candidates = new Set<string>();
+	const normalizedId = modelId.trim().toLowerCase();
+
+	if (normalizedId.length > 0) {
+		candidates.add(normalizedId);
+		const slashIndex = normalizedId.lastIndexOf("/");
+		if (slashIndex >= 0 && slashIndex < normalizedId.length - 1) {
+			candidates.add(normalizedId.slice(slashIndex + 1));
+		}
+	}
+
+	if (typeof modelName === "string" && modelName.trim().length > 0) {
+		candidates.add(modelName.trim().toLowerCase());
+	}
+
+	return [...candidates];
+}
+
+function isAnthropicClaudeModel(model: Model<"bedrock-converse-stream">): boolean {
+	const candidates = getModelMatchCandidates(model.id, model.name);
+	return candidates.some(
+		(candidate) => candidate.includes("anthropic.claude") || candidate.includes("anthropic/claude"),
+	);
+}
+
+/**
+ * Check if the model supports adaptive thinking (Opus 4.6/4.7 and Sonnet 4.6).
+ */
+function supportsAdaptiveThinking(modelId: string, modelName?: string): boolean {
+	const candidates = getModelMatchCandidates(modelId, modelName);
+	return candidates.some(
+		(candidate) =>
+			candidate.includes("opus-4-6") ||
+			candidate.includes("opus-4.6") ||
+			candidate.includes("opus-4-7") ||
+			candidate.includes("opus-4.7") ||
+			candidate.includes("sonnet-4-6") ||
+			candidate.includes("sonnet-4.6"),
 	);
 }
 
 function mapThinkingLevelToEffort(
 	level: SimpleStreamOptions["reasoning"],
 	modelId: string,
-): "low" | "medium" | "high" | "max" {
+	modelName?: string,
+): "low" | "medium" | "high" | "xhigh" | "max" {
+	const candidates = getModelMatchCandidates(modelId, modelName);
+	const isOpus46 = candidates.some((candidate) => candidate.includes("opus-4-6") || candidate.includes("opus-4.6"));
+	const isOpus47 = candidates.some((candidate) => candidate.includes("opus-4-7") || candidate.includes("opus-4.7"));
+
 	switch (level) {
 		case "minimal":
 		case "low":
@@ -444,7 +483,9 @@ function mapThinkingLevelToEffort(
 		case "high":
 			return "high";
 		case "xhigh":
-			return modelId.includes("opus-4-6") || modelId.includes("opus-4.6") ? "max" : "high";
+			if (isOpus47) return "xhigh";
+			if (isOpus46) return "max";
+			return "high";
 		default:
 			return "high";
 	}
@@ -499,8 +540,7 @@ function supportsPromptCaching(model: Model<"bedrock-converse-stream">): boolean
  * "This model doesn't support the reasoningContent.reasoningText.signature field"
  */
 function supportsThinkingSignature(model: Model<"bedrock-converse-stream">): boolean {
-	const id = model.id.toLowerCase();
-	return id.includes("anthropic.claude") || id.includes("anthropic/claude");
+	return isAnthropicClaudeModel(model);
 }
 
 function buildSystemPrompt(
@@ -740,11 +780,11 @@ function buildAdditionalModelRequestFields(
 		return undefined;
 	}
 
-	if (model.id.includes("anthropic.claude") || model.id.includes("anthropic/claude")) {
-		const result: Record<string, any> = supportsAdaptiveThinking(model.id)
+	if (isAnthropicClaudeModel(model)) {
+		const result: Record<string, any> = supportsAdaptiveThinking(model.id, model.name)
 			? {
 					thinking: { type: "adaptive" },
-					output_config: { effort: mapThinkingLevelToEffort(options.reasoning, model.id) },
+					output_config: { effort: mapThinkingLevelToEffort(options.reasoning, model.id, model.name) },
 				}
 			: (() => {
 					const defaultBudgets: Record<ThinkingLevel, number> = {
@@ -767,7 +807,7 @@ function buildAdditionalModelRequestFields(
 					};
 				})();
 
-		if (!supportsAdaptiveThinking(model.id) && (options.interleavedThinking ?? true)) {
+		if (!supportsAdaptiveThinking(model.id, model.name) && (options.interleavedThinking ?? true)) {
 			result.anthropic_beta = ["interleaved-thinking-2025-05-14"];
 		}
 
