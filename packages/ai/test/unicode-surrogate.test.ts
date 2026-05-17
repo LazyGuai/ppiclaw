@@ -87,16 +87,15 @@ async function testEmojiInToolResults<TApi extends Api>(llm: Model<TApi>, option
 		content: [
 			{
 				type: "text",
-				text: `Test with emoji 🙈 and other characters:
-- Monkey emoji: 🙈
-- Thumbs up: 👍
-- Heart: ❤️
-- Thinking face: 🤔
-- Rocket: 🚀
-- Mixed text: Mario Zechner wann? Wo? Bin grad äußersr eventuninformiert 🙈
-- Japanese: こんにちは
-- Chinese: 你好
-- Mathematical symbols: ∑∫∂√
+				text: `Test with emoji 馃檲 and other characters:
+- Monkey emoji: 馃檲
+- Thumbs up: 馃憤
+- Heart: 鉂わ笍
+- Thinking face: 馃
+- Rocket: 馃殌
+- Mixed text: Mario Zechner wann? Wo? Bin grad 盲u脽ersr eventuninformiert 馃檲
+- Japanese: 銇撱倱銇仭銇?- Chinese: 浣犲ソ
+- Mathematical symbols: 鈭戔埆鈭傗垰
 - Special quotes: "curly" 'quotes'`,
 			},
 		],
@@ -173,7 +172,7 @@ async function testRealWorldLinkedInData<TApi extends Api>(llm: Model<TApi>, opt
 		content: [
 			{
 				type: "text",
-				text: `Post: Hab einen "Generative KI für Nicht-Techniker" Workshop gebaut.
+				text: `Post: Hab einen "Generative KI f眉r Nicht-Techniker" Workshop gebaut.
 Unanswered Comments: 2
 
 => {
@@ -184,7 +183,7 @@ Unanswered Comments: 2
     },
     {
       "author": "Matthias Neumayer's  graphic link",
-      "text": "Mario Zechner wann? Wo? Bin grad äußersr eventuninformiert 🙈"
+      "text": "Mario Zechner wann? Wo? Bin grad 盲u脽ersr eventuninformiert 馃檲"
     }
   ]
 }`,
@@ -427,7 +426,7 @@ describe("AI Providers Unicode Surrogate Pair Tests", () => {
 			"claude-sonnet-4 - should handle emoji in tool results",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4.6");
 				await testEmojiInToolResults(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -436,7 +435,7 @@ describe("AI Providers Unicode Surrogate Pair Tests", () => {
 			"claude-sonnet-4 - should handle real-world LinkedIn comment data with emoji",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4.6");
 				await testRealWorldLinkedInData(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -445,7 +444,7 @@ describe("AI Providers Unicode Surrogate Pair Tests", () => {
 			"claude-sonnet-4 - should handle unpaired high surrogate (0xD83D) in tool results",
 			{ retry: 3, timeout: 30000 },
 			async () => {
-				const llm = getModel("github-copilot", "claude-sonnet-4");
+				const llm = getModel("github-copilot", "claude-sonnet-4.6");
 				await testUnpairedHighSurrogate(llm, { apiKey: githubCopilotToken });
 			},
 		);
@@ -564,7 +563,7 @@ describe("AI Providers Unicode Surrogate Pair Tests", () => {
 	});
 
 	describe.skipIf(!process.env.XAI_API_KEY)("xAI Provider Unicode Handling", () => {
-		const llm = getModel("xai", "grok-3");
+		const llm = getModel("xai", "grok-code-fast-1");
 
 		it("should handle emoji in tool results", { retry: 3, timeout: 30000 }, async () => {
 			await testEmojiInToolResults(llm);
