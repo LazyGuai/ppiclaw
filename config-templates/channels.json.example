@@ -1,0 +1,17 @@
+{
+  "feishu": {
+    "agentCwd": "C:\\path\\to\\your\\pi-mono",
+    "workingDir": "C:\\path\\to\\your\\pi-mono\\packages\\feishu\\data-feishu",
+    "apiBaseUrl": "https://open.feishu.cn",
+    "transport": "long-connection",
+    "appId": "cli_xxx",
+    "appSecret": "your-feishu-app-secret",
+    "botOpenId": "ou_xxx",
+    "requireMention": true,
+    "verifyToken": "your-feishu-verify-token-if-callback",
+    "encryptKey": "",
+    "webhookHost": "127.0.0.1",
+    "webhookPath": "/feishu/events",
+    "webhookPort": 3000
+  }
+}

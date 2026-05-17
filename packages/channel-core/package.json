@@ -1,0 +1,39 @@
+{
+	"name": "@mariozechner/pi-channel-core",
+	"version": "0.66.1",
+	"description": "Channel-agnostic messaging primitives for pi integrations",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"clean": "shx rm -rf dist",
+		"build": "tsgo -p tsconfig.build.json",
+		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"shx": "^0.4.0",
+		"typescript": "^5.7.3"
+	},
+	"keywords": [
+		"bot",
+		"channel",
+		"agent",
+		"messaging"
+	],
+	"author": "Mario Zechner",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/badlogic/pi-mono.git",
+		"directory": "packages/channel-core"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

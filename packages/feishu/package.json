@@ -1,0 +1,49 @@
+{
+	"name": "@mariozechner/pi-feishu",
+	"version": "0.66.1",
+	"description": "Feishu/Lark channel adapter for pi",
+	"type": "module",
+	"bin": {
+		"feishu": "dist/main.js"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"clean": "shx rm -rf dist",
+		"build": "tsgo -p tsconfig.build.json && shx chmod +x dist/main.js",
+		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
+		"sync:openclaw-skills": "node ./scripts/sync-openclaw-feishu-skills.mjs",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"dependencies": {
+		"@larksuiteoapi/node-sdk": "^1.60.0",
+		"@mariozechner/pi-channel-core": "^0.66.1",
+		"@mariozechner/pi-coding-agent": "^0.66.1"
+	},
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"shx": "^0.4.0",
+		"typescript": "^5.7.3"
+	},
+	"keywords": [
+		"feishu",
+		"lark",
+		"bot",
+		"ai",
+		"agent"
+	],
+	"author": "Mario Zechner",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/badlogic/pi-mono.git",
+		"directory": "packages/feishu"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

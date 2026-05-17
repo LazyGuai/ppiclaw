@@ -1,0 +1,14 @@
+{
+  "openai": {
+    "type": "api_key",
+    "key": "sk-your-openai-api-key"
+  },
+  "anthropic": {
+    "type": "api_key",
+    "key": "sk-ant-your-anthropic-api-key"
+  },
+  "google": {
+    "type": "api_key",
+    "key": "your-gemini-api-key"
+  }
+}

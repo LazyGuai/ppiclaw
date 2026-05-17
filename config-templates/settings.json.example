@@ -1,0 +1,6 @@
+{
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-5.4",
+  "defaultThinkingLevel": "medium",
+  "transport": "auto"
+}
