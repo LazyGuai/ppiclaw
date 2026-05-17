@@ -86,8 +86,8 @@ describe("Copilot Claude via Anthropic Messages", () => {
 		expect(Array.isArray(params.messages)).toBe(true);
 	});
 
-	it("includes interleaved-thinking beta when reasoning is enabled", async () => {
-		const model = getModel("github-copilot", "claude-sonnet-4.6");
+	it("includes interleaved-thinking beta for non-adaptive Claude models", async () => {
+		const model = getModel("github-copilot", "claude-sonnet-4.5");
 		const { streamAnthropic } = await import("../src/providers/anthropic.js");
 		const s = streamAnthropic(model, context, {
 			apiKey: "tid_copilot_session_test_token",
@@ -99,5 +99,21 @@ describe("Copilot Claude via Anthropic Messages", () => {
 
 		const headers = mockState.constructorOpts!.defaultHeaders as Record<string, string>;
 		expect(headers["anthropic-beta"]).toContain("interleaved-thinking-2025-05-14");
+	});
+
+	it("omits interleaved-thinking beta for adaptive Claude models", async () => {
+		const model = getModel("github-copilot", "claude-sonnet-4.6");
+		const { streamAnthropic } = await import("../src/providers/anthropic.js");
+		const s = streamAnthropic(model, context, {
+			apiKey: "tid_copilot_session_test_token",
+			interleavedThinking: true,
+		});
+		for await (const event of s) {
+			if (event.type === "error") break;
+		}
+
+		const headers = mockState.constructorOpts!.defaultHeaders as Record<string, string>;
+		const beta = headers["anthropic-beta"] ?? "";
+		expect(beta).not.toContain("interleaved-thinking-2025-05-14");
 	});
 });
